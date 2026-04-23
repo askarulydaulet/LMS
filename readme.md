@@ -34,6 +34,6 @@ OpenStudy — это современное веб-приложение для �
 # Установка и запуск
  
 ```bash 
-git clone https://gitlab.com/username/project.git 
+git clone https://github.com/askarulydaulet/LMS.git
 cd LMS 
 start index.html
