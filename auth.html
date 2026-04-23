@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenStudy - Авторизация</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            emailjs.init("KwJ-TN899sagUZ8FV");
+        })();
+    </script>
+</head>
+<body class="auth-page">
+<div class="auth-container">
+    <div class="auth-logo">
+        <img src="https://img.icons8.com/ios-filled/50/000000/graduation-cap.png" alt="logo">
+        <span>OpenStudy</span>
+    </div>
+
+    <div id="login-form" class="auth-box">
+        <p class="auth-subtitle">Войдите в свой аккаунт</p>
+        <form id="form-login">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="login-email" required placeholder="example@mail.com">
+            </div>
+            <div class="input-group">
+                <label>Пароль</label>
+                <input type="password" id="login-password" required>
+            </div>
+            <div class="auth-options">
+                <label><input type="checkbox"> Запомнить меня</label>
+                <a href="#" onclick="showForm('reset-form')">Забыли пароль?</a>
+            </div>
+            <button type="submit" class="btn-primary">Вход</button>
+        </form>
+        <p class="auth-footer">Нет аккаунта? <a href="#" onclick="showForm('register-form')">Зарегистрируйтесь</a></p>
+    </div>
+
+    <div id="register-form" class="auth-box" style="display: none;">
+        <p class="auth-subtitle">Зарегистрируйте свой аккаунт</p>
+        <form id="form-register">
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Ваше имя</label>
+                    <input type="text" required>
+                </div>
+                <div class="input-group">
+                    <label>Ваша фамилия</label>
+                    <input type="text" required>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" required>
+            </div>
+
+            <div class="input-group">
+    <label>Кто вы в системе?</label>
+    <select id="register-role" style="width: 100%; padding: 12px; border-radius: 10px; border: none; background: #f1f3f5; outline: none;" required>
+        <option value="student">Я Студент</option>
+        <option value="teacher">Я Преподаватель</option>
+    </select>
+</div>
+
+            <div class="input-group">
+                <label>Пароль</label>
+                <input type="password" required>
+            </div>
+            <div class="input-group">
+                <label>Подтвердите пароль</label>
+                <input type="password" required>
+            </div>
+
+
+            <button type="submit" class="btn-primary">Зарегистрироваться</button>
+        </form>
+        <p class="auth-footer">Уже есть аккаунт? <a href="#" onclick="showForm('login-form')">Войти</a></p>
+    </div>
+
+    <div id="reset-form" class="auth-box" style="display: none;">
+        <p class="auth-subtitle">Восстановление пароля</p>
+        <form id="form-reset">
+            <div class="input-group">
+                <label>Email</label>
+                <div class="input-with-btn">
+                    <input type="email" required>
+                    <button type="button" class="inline-btn">Выслать код</button>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Код подтверждения</label>
+                <input type="text">
+            </div>
+            <div class="input-group">
+                <label>Введите новый пароль</label>
+                <input type="password">
+            </div>
+            <div class="input-group">
+                <label>Подтвердите пароль</label>
+                <input type="password">
+            </div>
+            <button type="submit" class="btn-primary">Вход</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showForm(formId) {
+        document.querySelectorAll('.auth-box').forEach(box => box.style.display = 'none');
+        document.getElementById(formId).style.display = 'block';
+    }
+
+    let generatedVerifyCode = null;
+
+    // 1. ЛОГИКА РЕГИСТРАЦИИ
+    document.getElementById('form-register').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const inputs = this.querySelectorAll('input');
+        const role = document.getElementById('register-role').value; 
+        const newUser = {
+            firstName: inputs[0].value,
+            lastName: inputs[1].value,
+            email: inputs[2].value,
+            password: inputs[3].value,  
+            role: role
+        };
+
+        if (inputs[3].value !== inputs[4].value) {
+            alert("Пароли не совпадают!");
+            return;
+        }
+
+        let localUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+        if (localUsers.some(u => u.email === newUser.email)) {
+            alert("Пользователь с таким Email уже существует!");
+            return;
+        }
+
+        localUsers.push(newUser);
+        localStorage.setItem('registeredUsers', JSON.stringify(localUsers));
+        alert("Регистрация успешна!");
+        showForm('login-form');
+    });
+
+    // 2. ИСПРАВЛЕННАЯ ЛОГИКА ВХОДА С ПЕРЕНАПРАВЛЕНИЕМ
+document.getElementById('form-login').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    try {
+        const response = await fetch('users.json');
+        const jsonUsers = await response.json();
+        const localUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+        const allUsers = [...jsonUsers, ...localUsers];
+
+        const user = allUsers.find(u => u.email === email && u.password === password);
+
+        if (user) {
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            
+            // Проверка роли для редиректа
+            if (user.role === 'student') {
+                window.location.href = "student-index.html";
+            } else {
+                // Преподаватели и пользователи из users.json (у которых нет роли) [8]
+                window.location.href = "index.html";
+            }
+        } else {
+            alert("Неверный email или пароль.");
+        }
+    } catch (error) {
+        alert("Ошибка при входе. Проверьте подключение.");
+    }
+});
+
+    // 3. ОТПРАВКА КОДА ЧЕРЕЗ EMAILJS
+    document.querySelector('.inline-btn').addEventListener('click', function() {
+        const emailInput = document.querySelector('#form-reset input[type="email"]');
+        const emailValue = emailInput.value.trim().toLowerCase();
+
+        if (!emailValue) {
+            alert("Введите Email для получения кода");
+            return;
+        }
+
+        let serviceId = "";
+
+        if (emailValue.endsWith("@gmail.com")) {
+            serviceId = "service_0dd8fjh"; 
+        } else if (emailValue.endsWith("@outlook.com") || emailValue.endsWith("@hotmail.com")) {
+            serviceId = "service_pirmegb"; 
+        } else {
+            alert("Пожалуйста, используйте почту @gmail.com или @outlook.com");
+            return;
+        }
+
+
+        generatedVerifyCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const templateParams = {
+            message: generatedVerifyCode,
+            email: emailValue
+        };
+
+        emailjs.send(serviceId, "template_1huenyd", templateParams)
+            .then(function() {
+                alert(`Код отправлен через сервис ${emailValue.split('@')[1]}! Проверьте почту.`);
+                console.log("Демо-код для теста:", generatedVerifyCode);
+            }, function(error) {
+                console.error('EmailJS Error:', error);
+                alert("Ошибка 422: Проверьте лимиты и настройки выбранного сервиса в EmailJS.");
+            });
+    });
+
+    // 1. ИСПРАВЛЕННАЯ ЛОГИКА РЕГИСТРАЦИИ
+document.getElementById('form-register').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const inputs = this.querySelectorAll('input');
+    // Достаем роль из выпадающего списка
+    const role = document.getElementById('register-role').value; 
+
+    const newUser = {
+        firstName: inputs.value,
+        lastName: inputs[4].value,
+        email: inputs[5].value,
+        password: inputs[6].value,
+        role: role // Теперь роль сохраняется в объект!
+    };
+
+    if (inputs[6].value !== inputs[7].value) {
+        alert("Пароли не совпадают!");
+        return;
+    }
+
+    let localUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+    if (localUsers.some(u => u.email === newUser.email)) {
+        alert("Пользователь с таким Email уже существует!");
+        return;
+    }
+
+    localUsers.push(newUser);
+    localStorage.setItem('registeredUsers', JSON.stringify(localUsers));
+    alert("Регистрация успешна!");
+    showForm('login-form');
+});
+
+</script>
+</body>
+</html>
+
+        <!-- const inputs = this.querySelectorAll('input');
+        const email = inputs[0].value;
+        const userEnteredCode = inputs[1].value;
+        const newPass = inputs[2].value;
+        const confirmPass = inputs[3].value; -->

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenStudy Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+</head>
+<body>
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="logo">
+            <i data-lucide="graduation-cap"></i>
+            <span>OpenStudy</span>
+        </div>
+        <nav>
+            <a href="#" class="active"><i data-lucide="home"></i> Главная</a>
+            <a href="courses.html"><i data-lucide="graduation-cap"></i> Курсы</a>
+            <a href="teacher-assignments.html"><i data-lucide="bar-chart-2"></i> Задания</a>
+            <a href="#"><i data-lucide="star"></i> Оценки</a>
+            <a href="#"><i data-lucide="settings"></i> Настройки</a>
+            <a href="#" onclick="logout()"><i data-lucide="log-out"></i> Выход</a>
+        </nav>
+
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="user-welcome">
+                <div class="avatar-placeholder">
+                    <i data-lucide="user"></i>
+                </div>
+                <div>
+                    <h1>Добро пожаловать, Аскарулы Даулет</h1>
+                    <p>Здесь краткий обзор Вашего курса</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="icon-btn notif-btn">
+                    <i data-lucide="bell"></i>
+                </div>
+                <div class="avatar-small">
+                    <i data-lucide="user"></i>
+                </div>
+            </div>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card purple">
+                <div class="icon-circle"><i data-lucide="code"></i></div>
+                <h3>Основы: HTML и CSS</h3>
+                <div class="stat-line"><span>Всего записались</span> <span>200</span></div>
+                <div class="stat-line"><span>Сдали</span> <span>120</span></div>
+                <div class="stat-line"><span>Средний балл</span> <span>75%</span></div>
+            </div>
+            <div class="stat-card orange">
+                <div class="icon-circle"><i data-lucide="pen-tool"></i></div>
+                <h3>Дизайн бренда</h3>
+                <div class="stat-line"><span>Всего записались</span> <span>319</span></div>
+                <div class="stat-line"><span>Сдали</span> <span>207</span></div>
+                <div class="stat-line"><span>Средний балл</span> <span>68%</span></div>
+            </div>
+            <div class="stat-card green">
+                <div class="icon-circle"><i data-lucide="trending-up"></i></div>
+                <h3>Анимационный дизайн</h3>
+                <div class="stat-line"><span>Всего записались</span> <span>112</span></div>
+                <div class="stat-line"><span>Сдали</span> <span>99</span></div>
+                <div class="stat-line"><span>Средний балл</span> <span>87%</span></div>
+            </div>
+        </section>
+
+        <section class="equal-grid">
+            <div class="grid-column">
+                <div class="column-header">
+                    <h2>Ваши недавние классы</h2>
+                    <div class="controls">
+                        <span>Все</span>
+                        <i data-lucide="search"></i>
+                        <i data-lucide="plus-circle"></i>
+                    </div>
+                </div>
+                <div class="item-card">
+                    <div class="item-icon"><i data-lucide="figma"></i></div>
+                    <div class="item-info">
+                        <h4>Основы UI в Figma</h4>
+                        <div class="item-meta">
+                            <span><i data-lucide="clock"></i> 2:30 ч</span>
+                            <span><i data-lucide="book-open"></i> 14 занятий</span>
+                            <span><i data-lucide="check-circle"></i> Тестирование</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-card">
+                    <div class="item-icon"><i data-lucide="shield"></i></div>
+                    <div class="item-info">
+                        <h4>Тест на этичный взлом</h4>
+                        <div class="item-meta">
+                            <span><i data-lucide="clock"></i> 2:30 ч</span>
+                            <span><i data-lucide="book-open"></i> 14 занятий</span>
+                            <span><i data-lucide="check-circle"></i> Тестирование</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-column">
+                <div class="column-header">
+                    <h2>Предстоящие дедлайны</h2>
+                </div>
+                <div class="item-card">
+                    <div class="item-icon borderless"><i data-lucide="graduation-cap"></i></div>
+                    <div class="item-info">
+                        <h4>Основы облачных вычислений</h4>
+                        <p class="date-text">25.02.2026, 17:30</p>
+                    </div>
+                </div>
+                <div class="item-card">
+                    <div class="item-icon borderless"><i data-lucide="check-circle"></i></div>
+                    <div class="item-info">
+                        <h4>Разработка мобильного приложения</h4>
+                        <p class="date-text">26.02.2026, 14:00</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    lucide.createIcons();
+    // Получаем данные из localStorage
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+
+    if (user) {
+        // Заменяем текст в шапке (убедитесь, что у вашего h1 есть id="user-name")
+        const welcomeTitle = document.querySelector('.user-welcome h1');
+        if (welcomeTitle) {
+            welcomeTitle.textContent = `Добро пожаловать, ${user.lastName} ${user.firstName}`;
+        }
+    } else {
+        // Если не залогинен — перекидываем обратно на логин
+        // window.location.href = "auth.html";
+    }
+
+    function logout() {
+        localStorage.removeItem('currentUser'); // Удаляем только текущую сессию
+        window.location.href = 'auth.html';
+    }
+</script>
+</body>
+</html>

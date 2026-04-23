@@ -1,0 +1,20 @@
+[
+  {
+    "firstName": "Даулет",
+    "lastName": "Аскарулы",
+    "email": "daulet@openstudy.kz",
+    "password": "123123"
+  },
+  {
+    "firstName": "Иван",
+    "lastName": "Иванов",
+    "email": "ivan@example.com",
+    "password": "456"
+  },
+  {
+    "firstName": "Admin",
+    "lastName": "Test",
+    "email": "admin@test.com",
+    "password": "password"
+  }
+]

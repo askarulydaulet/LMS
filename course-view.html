@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenStudy - Плеер курса</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="course-view-page">
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="logo"><i data-lucide="graduation-cap"></i> <span>OpenStudy</span></div>
+        <nav>
+            <a href="index.html"><i data-lucide="home"></i> Главная</a>
+            <a href="courses.html" class="active"><i data-lucide="graduation-cap"></i> Курсы</a>
+            <a href="#"><i data-lucide="bar-chart-2"></i> Задания</a>
+            <a href="#"><i data-lucide="star"></i> Оценки</a>
+            <a href="#"><i data-lucide="settings"></i> Настройки</a>
+            <a href="#" onclick="logout()"><i data-lucide="log-out"></i> Выход</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="user-welcome">
+                <div class="avatar-placeholder">
+                    <i data-lucide="user"></i>
+                </div>
+                <div>
+                    <h1 id="user-name-header">Загрузка...</h1>
+                    <p>Обучающая платформа OpenStudy</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="icon-btn"><i data-lucide="bell"></i></div>
+                <div class="avatar-small">
+                    <i data-lucide="user"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="player-layout">
+            <div class="curriculum-sidebar">
+                <div class="course-mini-info">
+                    <div class="mini-icon" id="course-icon-container"></div>
+                    <h4 id="course-title-sidebar">Название курса</h4>
+                </div>
+                <p class="label">Содержание курса</p>
+                <div id="modules-container"></div>
+            </div>
+
+            <div class="content-display">
+                <h3 class="window-title">Учебный плеер</h3>
+                <div id="video-container" class="video-box">
+                </div>
+
+                <div class="lesson-description">
+                    <h2 id="current-lesson-title">Загрузка...</h2>
+                    <p id="lesson-text"></p>
+                    <div class="checklist">
+                        <p>Дополнительные материалы:</p>
+                        <ul id="lesson-bullets">
+                            <li>Файлы проекта к текущему уроку</li>
+                            <li>Список полезных ссылок</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Функция для преобразования ссылки YouTube в Embed формат
+    function getEmbedUrl(url) {
+        if (!url) return "";
+        let videoId = "";
+        if (url.includes("v=")) {
+            videoId = url.split("v=")[1].split("&")[0];
+        } else if (url.includes("youtu.be/")) {
+            videoId = url.split("youtu.be/")[1];
+        }
+        return `https://www.youtube.com/embed/${videoId}`;
+    }
+
+    async function initCourse() {
+        const courseId = localStorage.getItem('selectedCourseId');
+        const response = await fetch('courses.json');
+        const courses = await response.json();
+        const course = courses.find(c => c.id === courseId);
+
+        if (!course) {
+            alert("Курс не найден!");
+            window.location.href = 'courses.html';
+            return;
+        }
+
+        // Имя пользователя
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        if (user) document.getElementById('user-name-header').textContent = `${user.lastName} ${user.firstName},`;
+
+        // Данные курса
+        document.getElementById('course-title-sidebar').textContent = course.title;
+        document.getElementById('course-icon-container').innerHTML = `<i data-lucide="${course.icon}"></i>`;
+        document.getElementById('current-lesson-title').textContent = course.modules[0].lessons[0];
+        document.getElementById('lesson-text').textContent = course.fullDescription;
+
+        // Вставка ВИДЕО
+        const embedUrl = getEmbedUrl(course.videoUrl);
+        document.getElementById('video-container').innerHTML = `
+                <iframe
+                    width="100%"
+                    height="100%"
+                    src="${embedUrl}"
+                    title="YouTube video player"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen
+                    style="border-radius: 20px;">
+                </iframe>`;
+
+        // Список модулей
+        document.getElementById('modules-container').innerHTML = course.modules.map(m => `
+                <div class="module-group">
+                    <div class="module-header">
+                        <span>${m.title}</span>
+                        <i data-lucide="chevron-down"></i>
+                    </div>
+                    <div class="module-lessons">
+                        ${m.lessons.map(l => `<div class="lesson-item ${l.includes('1.1') ? 'active' : ''}">${l}</div>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+        lucide.createIcons();
+    }
+
+    initCourse();
+</script>
+</body>
+</html>

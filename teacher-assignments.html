@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenStudy - Проверка заданий</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="logo"><i data-lucide="graduation-cap"></i> <span>OpenStudy</span></div>
+        <nav>
+            <a href="index.html"><i data-lucide="home"></i> Главная</a>
+            <a href="courses.html"><i data-lucide="graduation-cap"></i> Курсы</a>
+            <a href="teacher-assignments.html" class="active"><i data-lucide="bar-chart-2"></i> Задания</a>
+            <a href="#" onclick="logout()"><i data-lucide="log-out"></i> Выход</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="user-welcome">
+                <h1>Проверка работ</h1>
+                <p>Здесь вы можете выставить оценки студентам</p>
+            </div>
+        </header>
+
+        <section class="courses-section">
+            <div id="submissions-list" class="courses-list">
+                <!-- Сюда попадет работа Айнары из localStorage -->
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    const submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
+    const list = document.getElementById('submissions-list');
+
+    function renderSubmissions() {
+        if (submissions.length === 0) {
+            list.innerHTML = "<p>Новых работ на проверку нет.</p>";
+            return;
+        }
+
+        list.innerHTML = submissions.map((sub, index) => `
+            <div class="course-card">
+                <div class="course-info">
+                    <h3>${sub.studentName}</h3>
+                    <p>Задание: <strong>${sub.taskId}</strong></p>
+                    <div class="course-meta">
+                        <span><i data-lucide="link"></i> <a href="${sub.link}" target="_blank">Открыть работу</a></span>
+                        <span><i data-lucide="calendar"></i> ${sub.date}</span>
+                    </div>
+                </div>
+                <div class="course-actions">
+                    <input type="number" placeholder="Балл" id="grade-${index}" style="width: 60px; padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
+                    <button class="action-btn" onclick="saveGrade(${index})"><i data-lucide="check"></i></button>
+                </div>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    window.saveGrade = function(index) {
+        const grade = document.getElementById(`grade-${index}`).value;
+        submissions[index].status = "Оценено";
+        submissions[index].grade = grade;
+        localStorage.setItem('studentSubmissions', JSON.stringify(submissions));
+        alert("Оценка выставлена!");
+    };
+
+    renderSubmissions();
+</script>
+</body>
+</html>

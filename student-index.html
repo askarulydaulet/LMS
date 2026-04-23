@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenStudy - Дашборд Студента</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="logo"><i data-lucide="graduation-cap"></i> <span>OpenStudy</span></div>
+        <nav>
+            <a href="student-index.html" class="active"><i data-lucide="home"></i> Главная</a>
+            <a href="student-courses.html"><i data-lucide="book"></i> Мои курсы</a>
+            <a href="student-assignments.html"><i data-lucide="bar-chart-2"></i> Задания</a>
+            <a href="#"><i data-lucide="star"></i> Оценки</a>
+            <a href="#" onclick="logout()"><i data-lucide="log-out"></i> Выход</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="user-welcome">
+                <div class="avatar-placeholder"><i data-lucide="user"></i></div>
+                <div>
+                    <h1 id="user-name">Загрузка...</h1>
+                    <p>Рады видеть вас! Продолжите свое обучение сегодня.</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="icon-btn notif-btn"><i data-lucide="bell"></i></div>
+                <div class="avatar-small"><i data-lucide="user"></i></div>
+            </div>
+        </header>
+
+        <!-- Студенческая статистика (заменяет карточки преподавателя) -->
+        <section class="stats-grid">
+            <div class="stat-card purple">
+                <div class="icon-circle"><i data-lucide="book-open"></i></div>
+                <h3>Мои курсы</h3>
+                <div class="stat-line"><span>Активные</span> <span>3</span></div>
+                <div class="stat-line"><span>Завершено</span> <span>1</span></div>
+            </div>
+            <div class="stat-card orange">
+                <div class="icon-circle"><i data-lucide="clipboard-check"></i></div>
+                <h3>Задания</h3>
+                <div class="stat-line"><span>К сдаче</span> <span>5</span></div>
+                <div class="stat-line"><span>Проверено</span> <span>12</span></div>
+            </div>
+            <div class="stat-card green">
+                <div class="icon-circle"><i data-lucide="award"></i></div>
+                <h3>Успеваемость</h3>
+                <div class="stat-line"><span>Средний балл</span> <span>88%</span></div>
+                <div class="stat-line"><span>Место в рейтинге</span> <span>4</span></div>
+            </div>
+        </section>
+
+        <!-- Основной контент студента -->
+        <section class="equal-grid">
+            <div class="grid-column">
+                <div class="column-header">
+                    <h2>Продолжить обучение</h2>
+                    <a href="courses.html" class="controls">Все курсы</a>
+                </div>
+                <!-- Карточки курсов в процессе -->
+                <div class="item-card">
+                    <div class="item-icon"><i data-lucide="figma"></i></div>
+                    <div class="item-info">
+                        <h4>Основы UI в Figma</h4>
+                        <div class="item-meta">
+                            <span><i data-lucide="play-circle"></i> Модуль 1.2</span>
+                            <span>Прогресс: 45%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-card">
+                    <div class="item-icon"><i data-lucide="code"></i></div>
+                    <div class="item-info">
+                        <h4>Основы: HTML и CSS</h4>
+                        <div class="item-meta">
+                            <span><i data-lucide="play-circle"></i> Модуль 2.1</span>
+                            <span>Прогресс: 15%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-column">
+                <div class="column-header">
+                    <h2>Ближайшие дедлайны</h2>
+                </div>
+                <!-- Список заданий согласно ТЗ -->
+                <div class="item-card">
+                    <div class="item-icon borderless"><i data-lucide="alert-circle" style="color: #ef4444;"></i></div>
+                    <div class="item-info">
+                        <h4>Практическая работа №3 (Figma)</h4>
+                        <p class="date-text">Сегодня до 23:59</p>
+                    </div>
+                </div>
+                <div class="item-card">
+                    <div class="item-icon borderless"><i data-lucide="clock"></i></div>
+                    <div class="item-info">
+                        <h4>Тест: Семантическая верстка</h4>
+                        <p class="date-text">Завтра, 18:00</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    lucide.createIcons();
+    
+    // Получение данных текущего пользователя [3]
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (user) {
+        document.getElementById('user-name').textContent = `Привет, ${user.firstName}!`;
+        
+        // Проверка роли: если зашел не студент, можно добавить редирект
+        if (user.role !== 'student') {
+            console.log("Доступ ограничен: страница только для студентов.");
+        }
+    } else {
+        window.location.href = "auth.html"; [4]
+    }
+
+    function logout() {
+        localStorage.removeItem('currentUser'); [4]
+        window.location.href = 'auth.html'; [5]
+    }
+</script>
+</body>
+</html>

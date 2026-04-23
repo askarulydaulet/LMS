@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenStudy - Каталог курсов</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="logo"><i data-lucide="graduation-cap"></i> <span>OpenStudy</span></div>
+        <nav>
+            <!-- Ссылка ведет на главную страницу студента -->
+            <a href="student-index.html"><i data-lucide="home"></i> Главная</a>
+            <a href="student-courses.html" class="active"><i data-lucide="book-open"></i> Каталог курсов</a>
+            <a href="student-assignments.html"><i data-lucide="bar-chart-2"></i> Мои задания</a>
+            <a href="#"><i data-lucide="star"></i> Мои оценки</a>
+            <a href="#" onclick="logout()"><i data-lucide="log-out"></i> Выход</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="user-welcome">
+                <div class="avatar-placeholder"><i data-lucide="user"></i></div>
+                <div>
+                    <h1 id="user-name">Загрузка...</h1>
+                    <p>Выберите курс, чтобы начать или продолжить обучение</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="search-bar">
+                    <i data-lucide="search"></i>
+                    <input type="text" placeholder="Поиск по названию или описанию...">
+                </div>
+                <div class="avatar-small"><i data-lucide="user"></i></div>
+            </div>
+        </header>
+
+        <section class="courses-section">
+            <div class="section-header">
+                <h2>Доступные направления</h2>
+                <!-- Убрана кнопка создания курса (plus-circle), так как это роль студента [2] -->
+            </div>
+            <div id="courses-grid" class="courses-list">
+                <!-- Сюда будут подгружаться курсы из courses.json [4] -->
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    let allCourses = [];
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    const grid = document.getElementById('courses-grid');
+    const searchInput = document.querySelector('.search-bar input');
+
+    // Отображение имени студента [5, 6]
+    if (user) {
+        document.getElementById('user-name').textContent = `${user.firstName}, найдите свой курс`;
+    } else {
+        window.location.href = "auth.html";
+    }
+
+    // Функция отрисовки курсов без кнопок удаления [3]
+    function renderCourses(coursesToRender) {
+        if (coursesToRender.length === 0) {
+            grid.innerHTML = `<p style="padding: 20px; color: var(--text-gray);">Курсы по вашему запросу не найдены...</p>`;
+            return;
+        }
+        grid.innerHTML = coursesToRender.map(course => `
+            <div class="course-card">
+                <div class="course-icon-box"><i data-lucide="${course.icon}"></i></div>
+                <div class="course-info">
+                    <h3>${course.title}</h3>
+                    <p>${course.shortDesc}</p>
+                    <div class="course-meta">
+                        <span><i data-lucide="clock"></i> ${course.duration}</span>
+                        <span><i data-lucide="file-text"></i> ${course.lessonsCount} уроков</span>
+                        <span><i data-lucide="check-circle"></i> Сертификат</span>
+                    </div>
+                </div>
+                <div class="course-actions">
+                    <!-- Оставлена только кнопка просмотра курса [3] -->
+                    <button class="action-btn" title="Начать обучение" onclick="openCourse('${course.id}')">
+                        <i data-lucide="play-circle"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    // Загрузка данных из JSON [4]
+    async function loadCourses() {
+        try {
+            const response = await fetch('courses.json');
+            allCourses = await response.json();
+            renderCourses(allCourses);
+        } catch (error) {
+            console.error("Ошибка загрузки данных:", error);
+            grid.innerHTML = `<p>Не удалось загрузить список курсов.</p>`;
+        }
+    }
+
+    // Логика живого поиска по каталогу [7]
+    searchInput.addEventListener('input', (e) => {
+        const searchText = e.target.value.toLowerCase().trim();
+        const filtered = allCourses.filter(course => 
+            course.title.toLowerCase().includes(searchText) || 
+            course.shortDesc.toLowerCase().includes(searchText)
+        );
+        renderCourses(filtered);
+    });
+
+    function logout() {
+        localStorage.removeItem('currentUser');
+        window.location.href = 'auth.html';
+    }
+
+    function openCourse(id) {
+        localStorage.setItem('selectedCourseId', id);
+        window.location.href = 'course-view.html';
+    }
+
+    loadCourses();
+</script>
+</body>
+</html>

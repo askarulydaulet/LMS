@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenStudy - Мои задания</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="logo"><i data-lucide="graduation-cap"></i> <span>OpenStudy</span></div>
+        <nav>
+            <a href="student-index.html"><i data-lucide="home"></i> Главная</a>
+            <a href="student-courses.html"><i data-lucide="book-open"></i> Каталог курсов</a>
+            <a href="student-assignments.html" class="active"><i data-lucide="bar-chart-2"></i> Мои задания</a>
+            <a href="#"><i data-lucide="star"></i> Мои оценки</a>
+            <a href="#" onclick="logout()"><i data-lucide="log-out"></i> Выход</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="user-welcome">
+                <div class="avatar-placeholder"><i data-lucide="user"></i></div>
+                <div>
+                    <h1 id="user-name">Загрузка...</h1>
+                    <p>Список ваших текущих и выполненных работ</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="search-bar"><i data-lucide="search"></i><input type="text" placeholder="Поиск задания..."></div>
+                <div class="avatar-small"><i data-lucide="user"></i></div>
+            </div>
+        </header>
+
+        <section class="assignments-section">
+            <div class="section-header">
+                <h2>Актуальные задания</h2>
+            </div>
+            <div id="assignments-list" class="courses-list">
+                <!-- Сюда подгружаются задания -->
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Модальное окно загрузки работы (согласно ТЗ: Загрузка работы [1]) -->
+<div id="uploadModal" class="modal" style="display:none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+    <div class="auth-box" style="width: 100%; max-width: 500px; text-align: left;">
+        <h3 style="margin-bottom: 20px;">Загрузка выполненного задания</h3>
+        <form id="form-upload">
+            <input type="hidden" id="current-task-id">
+            <div class="input-group">
+                <label>Ссылка на работу (GitHub / Google Drive)</label>
+                <input type="url" id="work-link" required placeholder="https://...">
+            </div>
+            <div class="input-group">
+                <label>Комментарий для преподавателя</label>
+                <textarea id="work-comment" style="width: 100%; padding: 12px; border-radius: 10px; border: none; background: #f1f3f5; min-height: 100px; outline: none;"></textarea>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn-primary">Отправить работу</button>
+                <button type="button" class="btn-primary" style="background: #ccc;" onclick="closeModal()">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Имитация списка заданий (в реальной системе берется из БД/JSON)
+    const tasks = [
+        { id: "task-01", title: "Практическая работа №3 (Figma)", deadline: "25.04.2026, 23:59", course: "Основы UI в Figma" },
+        { id: "task-02", title: "Верстка адаптивного лендинга", deadline: "30.04.2026, 18:00", course: "Основы: HTML и CSS" }
+    ];
+
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    const listContainer = document.getElementById('assignments-list');
+    const uploadModal = document.getElementById('uploadModal');
+
+    if (user) {
+        document.getElementById('user-name').textContent = `${user.lastName} ${user.firstName}`;
+    }
+
+    function renderTasks() {
+        const submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
+        
+        listContainer.innerHTML = tasks.map(task => {
+            const userSub = submissions.find(s => s.taskId === task.id && s.studentEmail === user.email);
+            const isSubmitted = !!userSub;
+
+            return `
+                <div class="course-card">
+                    <div class="course-icon-box"><i data-lucide="${isSubmitted ? 'check-circle' : 'clock'}"></i></div>
+                    <div class="course-info">
+                        <h3>${task.title}</h3>
+                        <p>Курс: ${task.course}</p>
+                        <div class="course-meta">
+                            <span><i data-lucide="calendar"></i> Срок: ${task.deadline}</span>
+                            <span style="color: ${isSubmitted ? '#10b981' : '#ef4444'}">
+                                <strong>${isSubmitted ? 'Сдано' : 'Не сдано'}</strong>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="course-actions">
+                        <button class="action-btn" onclick="openUploadModal('${task.id}')">
+                            <i data-lucide="${isSubmitted ? 'rotate-ccw' : 'upload-cloud'}"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        lucide.createIcons();
+    }
+
+    function openUploadModal(taskId) {
+        document.getElementById('current-task-id').value = taskId;
+        uploadModal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        uploadModal.style.display = 'none';
+        document.getElementById('form-upload').reset();
+    }
+
+    document.getElementById('form-upload').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const taskId = document.getElementById('current-task-id').value;
+        const link = document.getElementById('work-link').value;
+        const comment = document.getElementById('work-comment').value;
+
+        let submissions = JSON.parse(localStorage.getItem('studentSubmissions') || '[]');
+        
+        // Логика "Повторная загрузка" [1]: заменяем старую работу, если она была
+        const existingIndex = submissions.findIndex(s => s.taskId === taskId && s.studentEmail === user.email);
+        
+        const newSubmission = {
+            taskId,
+            studentEmail: user.email,
+            studentName: `${user.firstName} ${user.lastName}`,
+            link,
+            comment,
+            date: new Date().toLocaleString(),
+            status: "На проверке"
+        };
+
+        if (existingIndex !== -1) {
+            submissions[existingIndex] = newSubmission;
+        } else {
+            submissions.push(newSubmission);
+        }
+
+        localStorage.setItem('studentSubmissions', JSON.stringify(submissions));
+        alert("Работа успешно отправлена на проверку!");
+        closeModal();
+        renderTasks();
+    });
+
+    function logout() {
+        localStorage.removeItem('currentUser');
+        window.location.href = 'auth.html';
+    }
+
+    renderTasks();
+</script>
+</body>
+</html>
